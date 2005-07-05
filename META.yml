@@ -1,0 +1,21 @@
+---
+name: App-Cache
+version: 0.29
+author:
+  - Leon Brocard <acme@astray.com>
+abstract: Easy application-level caching
+license: perl
+requires:
+  Class::Accessor::Chained::Fast: 0
+  File::Find::Rule: 0
+  File::HomeDir: 0
+  File::stat: 0
+  LWP::UserAgent: 0
+  Path::Class: 0
+  Storable: 0
+  Test::More: 0
+provides:
+  App::Cache:
+    file: lib/App/Cache.pm
+    version: 0.29
+generated_by: Module::Build version 0.261

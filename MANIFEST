@@ -1,0 +1,11 @@
+Build.PL
+CHANGES
+lib/App/Cache.pm
+MANIFEST			This list of files
+README
+t/lib/App/Cache/Test.pm
+t/pod.t
+t/pod_coverage.t
+t/simple.t
+META.yml
+Makefile.PL
