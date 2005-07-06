@@ -1,4 +1,8 @@
 CHANGES file for App::Cache:
 
+0.30 Wed Jul  6 01:28:33 BST 2005
+  - fix a silly bug where we wouldn't create the cache directory
+    properly (thanks, dha)
+
 0.29 Tue Jul  5 17:54:10 BST 2005
   - first release

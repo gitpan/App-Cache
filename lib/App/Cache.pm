@@ -8,7 +8,7 @@ use Path::Class;
 use Storable qw(nstore retrieve);
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( application directory ttl ));
-our $VERSION = '0.29';
+our $VERSION = '0.30';
 
 sub new {
   my $class = shift;
@@ -21,6 +21,11 @@ sub new {
 
   my $directory = dir(home(), "." . $self->_clean($self->application), "cache");
   $self->directory($directory);
+
+  my $topdirectory = dir(home(), "." . $self->_clean($self->application));
+  unless (-d $topdirectory) {
+    mkdir($topdirectory) || die "Error mkdiring $topdirectory: $!";
+  }
 
   unless (-d $directory) {
     mkdir($directory) || die "Error mkdiring $directory: $!";
