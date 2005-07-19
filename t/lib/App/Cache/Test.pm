@@ -56,12 +56,12 @@ sub onetwothree {
 sub url {
   my $self = shift;
   my $cache = App::Cache->new({ttl => 1});
-  my $orig = $cache->get_url("http://www.google.com/");
+  my $orig = $cache->get_url("http://www.google.com/ncr");
   like($orig, qr{I'm Feeling Lucky});
-  my $html = $cache->get_url("http://www.google.com/");
+  my $html = $cache->get_url("http://www.google.com/ncr");
   is($html, $orig);
   sleep 2;
-  $html = $cache->get_url("http://www.google.com/");
+  $html = $cache->get_url("http://www.google.com/ncr");
   is($html, $orig);
 }
 

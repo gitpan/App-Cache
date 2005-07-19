@@ -10,6 +10,7 @@ my $build = Module::Build->new(
     'File::Find::Rule'               => '0',
     'File::HomeDir'                  => '0',
     'File::stat'                     => '0',
+    'HTTP::Cookies'                  => '0',
     'LWP::UserAgent'                 => '0',
     'Path::Class'                    => '0',
     'Storable'                       => '0',

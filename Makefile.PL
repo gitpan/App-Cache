@@ -2,19 +2,20 @@
 use ExtUtils::MakeMaker;
 WriteMakefile
 (
+          'PL_FILES' => {},
+          'INSTALLDIRS' => 'site',
           'NAME' => 'App::Cache',
           'VERSION_FROM' => 'lib/App/Cache.pm',
           'PREREQ_PM' => {
-                           'Class::Accessor::Chained::Fast' => '0',
                            'File::Find::Rule' => '0',
                            'File::HomeDir' => '0',
-                           'File::stat' => '0',
+                           'Storable' => '0',
+                           'HTTP::Cookies' => '0',
+                           'Test::More' => '0',
+                           'Class::Accessor::Chained::Fast' => '0',
                            'LWP::UserAgent' => '0',
                            'Path::Class' => '0',
-                           'Storable' => '0',
-                           'Test::More' => '0'
-                         },
-          'INSTALLDIRS' => 'site',
-          'PL_FILES' => {}
+                           'File::stat' => '0'
+                         }
         )
 ;

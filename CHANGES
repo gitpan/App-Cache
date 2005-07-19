@@ -1,5 +1,9 @@
 CHANGES file for App::Cache:
 
+0.31 Tue Jul 19 21:40:46 BST 2005
+  - fix one of the tests to now go to www.google.com/ncr
+    (no country redirect)
+
 0.30 Wed Jul  6 01:28:33 BST 2005
   - fix a silly bug where we wouldn't create the cache directory
     properly (thanks, dha)

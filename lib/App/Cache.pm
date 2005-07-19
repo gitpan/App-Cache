@@ -3,12 +3,13 @@ use strict;
 use File::Find::Rule;
 use File::HomeDir;
 use File::stat;
+use HTTP::Cookies;
 use LWP::UserAgent;
 use Path::Class;
 use Storable qw(nstore retrieve);
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( application directory ttl ));
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 sub new {
   my $class = shift;
@@ -88,6 +89,7 @@ sub get_url {
   my $data = $self->get($url);
   unless ($data) {
     my $ua       = LWP::UserAgent->new;
+    $ua->cookie_jar(HTTP::Cookies->new());
     my $response = $ua->get($url);
     if ($response->is_success) {
       $data = $response->content;
