@@ -9,7 +9,7 @@ use Path::Class;
 use Storable qw(nstore retrieve);
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( application directory ttl ));
-our $VERSION = '0.31';
+our $VERSION = '0.33';
 
 sub new {
   my $class = shift;
@@ -131,6 +131,8 @@ sub _clean_filename {
   return $filename;
 }
 
+1;
+
 __END__
 
 =head1 NAME
@@ -239,9 +241,7 @@ Leon Brocard <acme@astray.com>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2005, Leon Brocard
+Copyright (C) 2005-7, Leon Brocard
 
 This module is free software; you can redistribute it or modify it under
 the same terms as Perl itself.
-
-1;
