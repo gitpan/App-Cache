@@ -9,7 +9,7 @@ use Path::Class;
 use Storable qw(nstore retrieve);
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( application directory ttl ));
-our $VERSION = '0.33';
+our $VERSION = '0.34';
 
 sub new {
   my $class = shift;

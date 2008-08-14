@@ -1,9 +1,11 @@
 --- #YAML:1.0
 name:                App-Cache
-version:             0.33
+version:             0.34
 abstract:            ~
 license:             ~
-generated_by:        ExtUtils::MakeMaker version 6.32
+author:              
+    - Leon Brocard <acme@astray.com>
+generated_by:        ExtUtils::MakeMaker version 6.44
 distribution_type:   module
 requires:     
     Class::Accessor::Chained::Fast: 0
@@ -16,7 +18,5 @@ requires:
     Storable:                      0
     Test::More:                    0
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
-author:
-    - Leon Brocard <acme@astray.com>
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3

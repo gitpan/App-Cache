@@ -1,6 +1,8 @@
 package App::Cache::Test;
 use strict;
 use App::Cache;
+use Digest::MD5 qw(md5 md5_hex md5_base64);
+use LWP::Simple qw(get);
 use Path::Class qw();
 use Storable qw(nstore retrieve);
 use Test::More;
@@ -54,17 +56,23 @@ sub onetwothree {
 }
 
 sub url {
-    my $self  = shift;
-    my $url   = 'http://www.astray.com/';
-    my $cache = App::Cache->new( { ttl => 1 } );
-    my $orig  = $cache->get_url($url);
-    use Digest::MD5 qw(md5 md5_hex md5_base64);
-    like( $orig, qr{Astray.com} );
-    my $html = $cache->get_url($url);
-    is( $html, $orig );
-    sleep 2;
-    $html = $cache->get_url($url);
-    is( $html, $orig );
+    my $self = shift;
+    my $url  = shift;
+
+    my $test_html = get($url);
+SKIP:
+    {
+        skip "Can't access $url", 3
+            unless $test_html && $test_html =~ /Astray.com/;
+        my $cache = App::Cache->new( { ttl => 1 } );
+        my $orig = $cache->get_url($url);
+        like( $orig, qr{Astray.com} );
+        my $html = $cache->get_url($url);
+        is( $html, $orig );
+        sleep 2;
+        $html = $cache->get_url($url);
+        is( $html, $orig );
+    }
 }
 
 sub scratch {
