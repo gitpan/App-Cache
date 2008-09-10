@@ -1,8 +1,8 @@
 --- #YAML:1.0
 name:                App-Cache
-version:             0.34
-abstract:            ~
-license:             ~
+version:             0.35
+abstract:            Easy application-level caching
+license:             perl
 author:              
     - Leon Brocard <acme@astray.com>
 generated_by:        ExtUtils::MakeMaker version 6.44

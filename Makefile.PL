@@ -7,6 +7,8 @@ WriteMakefile(
     'INSTALLDIRS'  => 'site',
     'NAME'         => 'App::Cache',
     'VERSION_FROM' => 'lib/App/Cache.pm',
+    'ABSTRACT'     => 'Easy application-level caching',
+    'LICENSE'      => 'perl',
     'AUTHOR'       => 'Leon Brocard <acme@astray.com>',
     'PREREQ_PM'    => {
         'File::Find::Rule'               => '0',

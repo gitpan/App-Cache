@@ -1,5 +1,9 @@
 CHANGES file for App::Cache:
 
+0.35 Wed Sep 10 20:26:08 BST 2008
+  - fixed manifest
+  - added human- and machine-readable license
+
 0.34 Thu Aug 14 11:50:28 CEST 2008
   - make the tests still pass even if you are offline
     (patch by Mark Fowler)
