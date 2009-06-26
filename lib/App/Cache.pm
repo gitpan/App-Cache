@@ -1,7 +1,9 @@
 package App::Cache;
 use strict;
+use warnings;
 use File::Find::Rule;
 use File::HomeDir;
+use File::Path qw( mkpath );
 use File::stat;
 use HTTP::Cookies;
 use LWP::UserAgent;
@@ -9,126 +11,127 @@ use Path::Class;
 use Storable qw(nstore retrieve);
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw( application directory ttl ));
-our $VERSION = '0.35';
+our $VERSION = '0.36';
 
 sub new {
-  my $class = shift;
-  my $self  = $class->SUPER::new(@_);
+    my $class = shift;
+    my $self  = $class->SUPER::new(@_);
 
-  unless ($self->application) {
-    my $caller = (caller)[0];
-    $self->application($caller);
-  }
+    unless ( $self->application ) {
+        my $caller = (caller)[0];
+        $self->application($caller);
+    }
 
-  my $directory = dir(home(), "." . $self->_clean($self->application), "cache");
-  $self->directory($directory);
+    unless ( $self->directory ) {
+        my $dir = dir( home(), "." . $self->_clean( $self->application ),
+            "cache" );
+        $self->directory($dir);
+    }
+    my $dir = $self->directory;
+    unless ( -d "$dir" ) {
+        mkpath("$dir")
+            || die "Error mkdiring " . $self->directory . ": $!";
+    }
 
-  my $topdirectory = dir(home(), "." . $self->_clean($self->application));
-  unless (-d $topdirectory) {
-    mkdir($topdirectory) || die "Error mkdiring $topdirectory: $!";
-  }
-
-  unless (-d $directory) {
-    mkdir($directory) || die "Error mkdiring $directory: $!";
-  }
-
-  return $self;
+    return $self;
 }
 
 sub clear {
-  my $self = shift;
-  foreach my $filename (File::Find::Rule->new->file->in($self->directory)) {
-    unlink($filename) || die "Error unlinking $filename: $!";
-  }
-  foreach my $dirname (sort { length($b) <=> length($a) }
-    File::Find::Rule->new->directory->in($self->directory))
-  {
-    next if $dirname eq $self->directory;
-    rmdir($dirname) || die "Error unlinking $dirname: $!";
-  }
+    my $self = shift;
+    foreach
+        my $filename ( File::Find::Rule->new->file->in( $self->directory ) )
+    {
+        unlink($filename) || die "Error unlinking $filename: $!";
+    }
+    foreach my $dirname ( sort { length($b) <=> length($a) }
+        File::Find::Rule->new->directory->in( $self->directory ) )
+    {
+        next if $dirname eq $self->directory;
+        rmdir($dirname) || die "Error unlinking $dirname: $!";
+    }
 }
 
 sub delete {
-  my ($self, $key) = @_;
-  my $filename = $self->_clean_filename($key);
-  return unless -f $filename;
-  unlink($filename) || die "Error unlinking $filename: $!";
+    my ( $self, $key ) = @_;
+    my $filename = $self->_clean_filename($key);
+    return unless -f $filename;
+    unlink($filename) || die "Error unlinking $filename: $!";
 }
 
 sub get {
-  my ($self, $key) = @_;
-  my $ttl = $self->ttl || 60 * 30;               # default ttl of 30 minutes
-  my $filename = $self->_clean_filename($key);
-  return undef unless -f $filename;
-  my $now   = time;
-  my $stat  = stat($filename) || die "Error stating $filename: $!";
-  my $ctime = $stat->ctime;
-  my $age   = $now - $ctime;
-  if ($age < $ttl) {
-    my $value = retrieve("$filename")
-      || die "Error reading from $filename: $!";
-    return $value->{value};
-  } else {
-    $self->delete($key);
-    return undef;
-  }
+    my ( $self, $key ) = @_;
+    my $ttl = $self->ttl || 60 * 30;               # default ttl of 30 minutes
+    my $filename = $self->_clean_filename($key);
+    return undef unless -f $filename;
+    my $now   = time;
+    my $stat  = stat($filename) || die "Error stating $filename: $!";
+    my $ctime = $stat->ctime;
+    my $age   = $now - $ctime;
+    if ( $age < $ttl ) {
+        my $value = retrieve("$filename")
+            || die "Error reading from $filename: $!";
+        return $value->{value};
+    } else {
+        $self->delete($key);
+        return undef;
+    }
 }
 
 sub get_code {
-  my ($self, $key, $code) = @_;
-  my $data = $self->get($key);
-  unless ($data) {
-    $data = $code->();
-    $self->set($key, $data);
-  }
-  return $data;
+    my ( $self, $key, $code ) = @_;
+    my $data = $self->get($key);
+    unless ($data) {
+        $data = $code->();
+        $self->set( $key, $data );
+    }
+    return $data;
 }
 
 sub get_url {
-  my ($self, $url) = @_;
-  my $data = $self->get($url);
-  unless ($data) {
-    my $ua       = LWP::UserAgent->new;
-    $ua->cookie_jar(HTTP::Cookies->new());
-    my $response = $ua->get($url);
-    if ($response->is_success) {
-      $data = $response->content;
-    } else {
-      die "Error fetching $url: " . $response->status_line;
+    my ( $self, $url ) = @_;
+    my $data = $self->get($url);
+    unless ($data) {
+        my $ua = LWP::UserAgent->new;
+        $ua->cookie_jar( HTTP::Cookies->new() );
+        my $response = $ua->get($url);
+        if ( $response->is_success ) {
+            $data = $response->content;
+        } else {
+            die "Error fetching $url: " . $response->status_line;
+        }
+        $self->set( $url, $data );
     }
-    $self->set($url, $data);
-  }
-  return $data;
+    return $data;
 }
 
 sub scratch {
-  my $self      = shift;
-  my $directory = $self->_clean_filename("_scratch");
-  unless (-d $directory) {
-    mkdir($directory) || die "Error mkdiring $directory: $!";
-  }
-  return $directory;
+    my $self      = shift;
+    my $directory = $self->_clean_filename("_scratch");
+    unless ( -d $directory ) {
+        mkdir($directory) || die "Error mkdiring $directory: $!";
+    }
+    return $directory;
 }
 
 sub set {
-  my ($self, $key, $value) = @_;
-  my $filename = $self->_clean_filename($key);
-  nstore({ value => $value }, "$filename")
-    || die "Error writing to $filename: $!";
+    my ( $self, $key, $value ) = @_;
+    my $filename = $self->_clean_filename($key);
+    nstore( { value => $value }, "$filename" )
+        || die "Error writing to $filename: $!";
 }
 
 sub _clean {
-  my ($self, $text) = @_;
-  $text = lc $text;
-  $text =~ s/[^a-z0-9]+/_/g;
-  return $text;
+    my ( $self, $text ) = @_;
+    $text = lc $text;
+    $text =~ s/[^a-z0-9]+/_/g;
+    return $text;
 }
 
 sub _clean_filename {
-  my ($self, $key) = @_;
-  $key = $self->_clean($key);
-  my $filename = file($self->directory, $key);
-  return $filename;
+    my ( $self, $key ) = @_;
+    $key = $self->_clean($key);
+    my $filename = file( $self->directory, $key );
+    return $filename;
 }
 
 1;
@@ -176,14 +179,35 @@ per-application cache.
 
 =head2 new
 
-The constructor creates an L<App::Cache> object. It takes two optional
-parameters: a ttl parameter which contains the number of seconds in
-which a cache entry expires, and an application parameter which
-signifies the application name. If you are calling new() from a class,
-the application is automagically set to the calling class, so you should
-rarely need to pass it in:
+The constructor creates an L<App::Cache> object. It takes three optional
+parameters:
 
-  my $cache = App::Cache->new({ ttl => 60*60 });
+=over
+
+=item *
+
+ttl contains the number of seconds in which a cache entry expires. The default
+is 30 minutes.
+
+  my $cache = App::Cache->new({ ttl => 30*60 });
+
+=item *
+
+application sets the application name. If you are calling new() from a class,
+the application is automagically set to the calling class, so you should rarely
+need to pass it in:
+
+  my $cache = App::Cache->new({ application => 'Your::Module' });
+
+=item *
+
+directory sets the directory to be used for the cache. Normally this is just
+set for you and will be based on the application name and be created in the
+users home directory. Sometimes for testing, it can be useful to set this.
+
+  my $cache = App::Cache->new({ directory => '/tmp/your/cache/dir' });
+
+=back
 
 =head2 clear
 
@@ -234,6 +258,15 @@ Perl data structure:
 
   $cache->set('test', 'one');
   $cache->set('test', { foo => 'bar' });
+
+=head2 directory
+
+Returns the full path to the cache directory. Primarily useful for when you
+are writing tests that use App::Cache and want to clean up after yourself. If
+you are doing that you may want to explicitly set the 'application' constructor
+parameter to avoid later cleaning up a cache dir that was already in use.
+
+  my $dir = $cache->directory;
 
 =head1 AUTHOR
 

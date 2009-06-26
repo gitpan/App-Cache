@@ -1,13 +1,24 @@
 package App::Cache::Test;
 use strict;
+use warnings;
 use App::Cache;
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 use LWP::Simple qw(get);
 use Path::Class qw();
 use Storable qw(nstore retrieve);
+use File::Path qw(rmtree);
 use Test::More;
+use File::Temp qw(tempdir);
+use File::Path qw(mkpath rmtree);
 use base qw( Class::Accessor::Chained::Fast );
 __PACKAGE__->mk_accessors(qw());
+
+sub cleanup {
+    my $self  = shift;
+    my $cache = App::Cache->new;
+    rmtree( $cache->directory->parent->stringify );
+    ok( !-d $cache->directory->parent, 'removed cache dir' );
+}
 
 sub file {
     my $self  = shift;
@@ -93,6 +104,23 @@ sub scratch {
         my $filename = Path::Class::File->new( $scratch, "$i.dat" );
         ok( !-f $filename );
     }
+}
+
+sub dir {
+    my $self = shift;
+    my $tmp_dir = tempdir( CLEANUP => 1 );
+    $self->with_dir($tmp_dir);
+    rmtree($tmp_dir);
+    ok( !-d $tmp_dir, 'tmp_dir removed successfully' );
+    $self->with_dir($tmp_dir);
+}
+
+sub with_dir {
+    my ( $self, $dir ) = @_;
+    my $cache = App::Cache->new( { directory => $dir } );
+    isa_ok( $cache, 'App::Cache' );
+    is( $cache->directory, $dir );
+    ok( -d $dir, 'tmp_dir exists ok' );
 }
 
 1;
